@@ -160,8 +160,10 @@ class ModelIMU:
         G_c = np.zeros((15, 12))
         Rq = x_est_nom.ori.as_rotmat()
 
-        # TODO remove this
-        G_c = models_solu.ModelIMU.get_error_G_c(self, x_est_nom)
+        G_c[block_3x3(1, 0)] = -Rq
+        G_c[block_3x3(2, 1)] = -np.eye(3)
+        G_c[block_3x3(3, 2)] = np.eye(3)
+        G_c[block_3x3(4, 3)] = np.eye(3)
 
         return G_c
 
