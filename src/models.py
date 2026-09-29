@@ -129,12 +129,19 @@ class ModelIMU:
             A (ndarray[15,15]): A
         """
         A_c = np.zeros((15, 15))
+
         Rq = x_est_nom.ori.as_rotmat()
         S_acc = get_cross_matrix(z_corr.acc)
         S_omega = get_cross_matrix(z_corr.avel)
 
-        # TODO remove this
-        A_c = models_solu.ModelIMU.A_c(self, x_est_nom, z_corr)
+        A_c[block_3x3(0, 1)] = np.eye(3)
+        A_c[block_3x3(1, 2)] = -Rq @ S_acc
+        A_c[block_3x3(1, 3)] = -Rq @ self.accm_correction
+        A_c[block_3x3(2, 2)] = -S_omega
+        A_c[block_3x3(2, 4)] = -self.gyro_correction
+        A_c[block_3x3(3, 3)] = -self.accm_bias_p * np.eye(3)
+        A_c[block_3x3(4, 4)] = -self.gyro_bias_p * np.eye(3)
+
         return A_c
 
     def get_error_G_c(self,
