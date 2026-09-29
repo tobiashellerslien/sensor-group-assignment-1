@@ -88,7 +88,7 @@ class ModelIMU:
         Returns:
             x_nom_pred: predicted nominal state
         """
-        acc = x_est_nom.ori.as_rotmat() @ (z_corr.acc - x_est_nom.acc_bias) + self.g
+        acc = x_est_nom.ori.as_rotmat() @ (z_corr.acc - x_est_nom.accm_bias) + self.g
         omega = z_corr.avel - x_est_nom.gyro_bias
         pos_pred = x_est_nom.pos + x_est_nom.vel * dt + 0.5 * dt**2 * acc
         vel_pred = x_est_nom.vel + dt * acc
@@ -96,7 +96,7 @@ class ModelIMU:
         delta_rot = RotationQuaterion.from_avec(dt*omega) 
         ori_pred = x_est_nom.ori.multiply(delta_rot)
 
-        acc_bias_pred = x_est_nom.acc_bias
+        acc_bias_pred = x_est_nom.accm_bias
         gyro_bias_pred = x_est_nom.gyro_bias
 
         x_nom_prod = NominalState(
@@ -117,7 +117,7 @@ class ModelIMU:
         Hint: The S matrices can be created using get_cross_matrix. In the book
         a perfect IMU is expected (thus many I matrices). Here we have 
         to use the correction matrices, self.accm_correction and 
-        self.gyro_correction, instead of som of the I matrices.  
+        self.gyro_correction, instead of some of the I matrices.  
 
         You can use block_3x3 to simplify indexing if you want to.
         ex: first I element in A can be set as A[block_3x3(0, 1)] = np.eye(3)
