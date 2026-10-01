@@ -37,22 +37,15 @@ class ESKF():
             x_est_pred: predicted eskf state
         """
         if dt == 0:
-
-            # TODO remove this
-            x_est_prev = eskf_solu.ESKF.predict_from_imu(
-                self, x_est_prev, z_imu, dt)
             return x_est_prev
 
         x_est_prev_nom = x_est_prev.nom
-        z_corr = None  # TODO
-        x_est_pred_nom = None  # TODO
-        x_est_pred_err = None  # TODO
+        z_corr = self.model.correct_z_imu(z_imu, x_est_prev_nom)
+        x_est_pred_nom = self.model.predict_nominal_state(x_est_prev_nom, z_corr, dt)
+        x_est_pred_err = self.model.predict_error_state(x_est_prev.err, z_corr, dt)
 
         x_est_pred = EskfState(x_est_pred_nom, x_est_pred_err)
 
-        # TODO remove this
-        x_est_pred = eskf_solu.ESKF.predict_from_imu(
-            self, x_est_prev, z_imu, dt)
         return x_est_pred
 
     def update_err_from_gnss(self,
