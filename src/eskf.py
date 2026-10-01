@@ -14,7 +14,7 @@ from quaternion import RotationQuaterion
 from utils.cross_matrix import get_cross_matrix
 from sensors import SensorGNSS
 from models import ModelIMU
-from solution import eskf as eskf_solu, sensors
+from solution import eskf as eskf_solu
 
 
 @dataclass
@@ -116,12 +116,13 @@ class ESKF():
         x_nom_inj = NominalState(pos_inj, vel_inj, ori_inj,
                                  accm_bias_inj, gyro_bias_inj)
 
-        P_inj = np.eye(15)
+        G = np.eye(15)
+        G[6:9, 6:9] = np.eye(3) - get_cross_matrix(0.5 * x_est_err.mean.avec)
+        P_inj = G @ x_est_err.cov @ G.T
+
         x_err_inj = MultiVarGauss[ErrorState](np.zeros(15), P_inj)
         x_est_inj = EskfState(x_nom_inj, x_err_inj)
 
-        # TODO remove this
-        x_est_inj = eskf_solu.ESKF.inject(self, x_est_nom, x_est_err)
         return x_est_inj
 
     def update_from_gnss(self,
@@ -142,12 +143,8 @@ class ESKF():
             z_est_upd: predicted measurement gaussian
 
         """
-        z_est_pred = None  # TODO
-        x_est_upd_err = None  # TODO
-        x_est_upd = None  # TODO
-
-        # TODO remove this
-        x_est_upd, z_est_pred = eskf_solu.ESKF.update_from_gnss(
-            self, x_est_pred, z_gnss)
+        z_est_pred = self.sensor.pred_from_est(x_est_pred)
+        x_est_upd_err = self.update_err_from_gnss(x_est_pred, z_est_pred, z_gnss)
+        x_est_upd = self.inject(x_est_pred.nom, x_est_upd_err)
 
         return x_est_upd, z_est_pred
