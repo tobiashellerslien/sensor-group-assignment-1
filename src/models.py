@@ -223,10 +223,9 @@ class ModelIMU:
         """
         x_est_prev_nom = x_est_prev.nom
         x_est_prev_err = x_est_prev.err
-        Ad, GQGTd = None, None  # TODO
-        P_pred = np.eye(15)  # TODO
-
-        # TODO remove this
-        x_err_pred = models_solu.ModelIMU.predict_err(
-            self, x_est_prev, z_corr, dt)
+        Ad, GQGTd = self.get_discrete_error_diff(x_est_prev_nom, z_corr, dt)  # TODO
+        P_pred = Ad @ x_est_prev_err.cov @ Ad.T + GQGTd  # TODO
+        x_err_pred = Ad @ x_est_prev_err + GQGTd @ x_est_prev_nom  # TODO
+        x_err_pred = MultiVarGauss(x_err_pred, P_pred)
+        
         return x_err_pred
