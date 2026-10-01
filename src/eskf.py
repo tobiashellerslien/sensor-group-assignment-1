@@ -40,9 +40,9 @@ class ESKF():
             return x_est_prev
 
         x_est_prev_nom = x_est_prev.nom
-        z_corr = self.model.correct_z_imu(z_imu, x_est_prev_nom)
+        z_corr = self.model.correct_z_imu(x_est_prev_nom, z_imu)
         x_est_pred_nom = self.model.predict_nom(x_est_prev_nom, z_corr, dt)
-        x_est_pred_err = self.model.predict_err(x_est_prev.err, z_corr, dt)
+        x_est_pred_err = self.model.predict_err(x_est_prev, z_corr, dt)
 
         x_est_pred = EskfState(x_est_pred_nom, x_est_pred_err)
 
@@ -110,7 +110,7 @@ class ESKF():
         err = x_est_err.mean
         pos_inj = x_est_nom.pos + err.pos
         vel_inj = x_est_nom.vel + err.vel
-        ori_inj = x_est_nom.ori * RotationQuaterion(1, 0.5*err.ori.vec)
+        ori_inj = x_est_nom.ori.multiply(RotationQuaterion(1, 0.5*err.avec))
         accm_bias_inj = x_est_nom.accm_bias + err.accm_bias
         gyro_bias_inj = x_est_nom.gyro_bias + err.gyro_bias
 

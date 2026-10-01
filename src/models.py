@@ -63,8 +63,8 @@ class ModelIMU:
         Returns:
             z_corr: corrected IMU measurement
         """
-        acc_est = self.accm_correction @ z_imu.acc
-        avel_est = self.gyro_correction @ z_imu.avel
+        acc_est = self.accm_correction @ (z_imu.acc - x_est_nom.accm_bias)
+        avel_est = self.gyro_correction @ (z_imu.avel - x_est_nom.gyro_bias)
 
         z_corr = CorrectedImuMeasurement(acc=acc_est, avel=avel_est)
         return z_corr
@@ -88,8 +88,8 @@ class ModelIMU:
         Returns:
             x_nom_pred: predicted nominal state
         """
-        acc = x_est_nom.ori.as_rotmat() @ (z_corr.acc - x_est_nom.accm_bias) + self.g
-        omega = z_corr.avel - x_est_nom.gyro_bias
+        acc = x_est_nom.ori.as_rotmat() @ z_corr.acc + self.g
+        omega = z_corr.avel
         pos_pred = x_est_nom.pos + x_est_nom.vel * dt + 0.5 * dt**2 * acc
         vel_pred = x_est_nom.vel + dt * acc
 
@@ -103,7 +103,7 @@ class ModelIMU:
             pos=pos_pred,
             vel=vel_pred,
             ori=ori_pred,
-            acc_bias=acc_bias_pred,
+            accm_bias=acc_bias_pred,
             gyro_bias=gyro_bias_pred
         )
         return x_nom_prod
