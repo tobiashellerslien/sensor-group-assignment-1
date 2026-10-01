@@ -107,11 +107,12 @@ class ESKF():
         Returns:
             x_est_inj: eskf state after injection
         """
-        pos_inj = np.zeros(3)
-        vel_inj = np.zeros(3)
-        ori_inj = RotationQuaterion(1, np.zeros(3))
-        accm_bias_inj = np.zeros(3)
-        gyro_bias_inj = np.zeros(3)
+        err = x_est_err.mean
+        pos_inj = x_est_nom.pos + err.pos
+        vel_inj = x_est_nom.vel + err.vel
+        ori_inj = x_est_nom.ori * RotationQuaterion(1, 0.5*err.ori.vec)
+        accm_bias_inj = x_est_nom.accm_bias + err.accm_bias
+        gyro_bias_inj = x_est_nom.gyro_bias + err.gyro_bias
 
         x_nom_inj = NominalState(pos_inj, vel_inj, ori_inj,
                                  accm_bias_inj, gyro_bias_inj)
