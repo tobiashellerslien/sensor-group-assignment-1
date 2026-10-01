@@ -41,8 +41,8 @@ class ESKF():
 
         x_est_prev_nom = x_est_prev.nom
         z_corr = self.model.correct_z_imu(z_imu, x_est_prev_nom)
-        x_est_pred_nom = self.model.predict_nominal_state(x_est_prev_nom, z_corr, dt)
-        x_est_pred_err = self.model.predict_error_state(x_est_prev.err, z_corr, dt)
+        x_est_pred_nom = self.model.predict_nom(x_est_prev_nom, z_corr, dt)
+        x_est_pred_err = self.model.predict_err(x_est_prev.err, z_corr, dt)
 
         x_est_pred = EskfState(x_est_pred_nom, x_est_pred_err)
 
