@@ -189,19 +189,18 @@ class ModelIMU:
             A_d (ndarray[15, 15]): discrede transition matrix
             GQGT_d (ndarray[15, 15]): discrete noise covariance matrix
         """
-        A_c = None  # TODO
-        G_c = None  # TODO
-        GQGT_c = None  # TODO
+        A_c = self.A_c(x_est_nom, z_corr)
+        G_c = self.get_error_G_c(x_est_nom)
+        GQGT_c = G_c @ self.Q_c @ G_c.T
 
-        exponent = None  # TODO
-        VanLoanMatrix = None  # TODO
+        exponent = np.block([
+            [-A_c, GQGT_c],
+            [np.zeros((15, 15)), A_c.T]
+        ]) * dt
+        VanLoanMatrix = scipy.linalg.expm(exponent)
 
-        A_d = None  # TODO
-        GQGT_d = None  # TODO
-
-        # TODO remove this
-        A_d, GQGT_d = models_solu.ModelIMU.get_discrete_error_diff(
-            self, x_est_nom, z_corr, dt)
+        A_d = VanLoanMatrix[15:, 15:].T
+        GQGT_d = VanLoanMatrix[:15, 15:]
 
         return A_d, GQGT_d
 
