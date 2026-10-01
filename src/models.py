@@ -200,7 +200,7 @@ class ModelIMU:
         VanLoanMatrix = scipy.linalg.expm(exponent)
 
         A_d = VanLoanMatrix[15:, 15:].T
-        GQGT_d = VanLoanMatrix[:15, 15:]
+        GQGT_d = A_d @ VanLoanMatrix[:15, 15:]
 
         return A_d, GQGT_d
 
@@ -223,9 +223,11 @@ class ModelIMU:
         """
         x_est_prev_nom = x_est_prev.nom
         x_est_prev_err = x_est_prev.err
-        Ad, GQGTd = self.get_discrete_error_diff(x_est_prev_nom, z_corr, dt)  # TODO
-        P_pred = Ad @ x_est_prev_err.cov @ Ad.T + GQGTd  # TODO
-        x_err_pred = Ad @ x_est_prev_err + GQGTd @ x_est_prev_nom  # TODO
-        x_err_pred = MultiVarGauss(x_err_pred, P_pred)
+
+        Ad, GQGTd = self.get_discrete_error_diff(x_est_prev_nom, z_corr, dt)
+        P_pred = Ad @ x_est_prev_err.cov @ Ad.T + GQGTd 
+
+        x_err_pred_mean = Ad @ x_est_prev_err.mean
+        x_err_pred = MultiVarGauss(x_err_pred_mean, P_pred)
         
         return x_err_pred
